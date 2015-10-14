@@ -12,7 +12,7 @@ import (
 	"github.com/libnetwork-plugin/plugin/driver"
 )
 
-var version = "unreleased version - pgrid"
+var version = "v1.0"
 
 func main() {
 	var (
@@ -22,13 +22,13 @@ func main() {
 	)
 
 	flag.BoolVar(&justVersion, "version", false, "print version and exit")
-	flag.StringVar(&address, "socket", "/run/docker/plugins/pgrid.sock", "socket on which to listen")
+	flag.StringVar(&address, "socket", "/run/docker/plugins/plumgrid.sock", "socket on which to listen")
 	//flag.StringVar(&nameserver, "nameserver", "", "nameserver to provide to containers")
 
 	flag.Parse()
 
 	if justVersion {
-		fmt.Printf("pgrid plugin %s\n", version)
+		fmt.Printf("PLUMgrid plugin %s\n", version)
 		os.Exit(0)
 	}
 

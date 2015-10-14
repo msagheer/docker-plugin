@@ -130,7 +130,7 @@ type getcapabilitiesResp struct {
 
 func (driver *driver) getCapabilities(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(&getcapabilitiesResp{
-		"global",
+		"local",
 	})
 	if err != nil {
 		Log.Fatal("get capability encode:", err)
@@ -407,6 +407,45 @@ func (driver *driver) leaveEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	Log.Debugf("Leave request: %+v", &l)
+
+	if_local_name := "tap" + l.EndpointID[:5]
+
+	//getting mac address of tap...
+	cmdStr0 := "ifconfig " + if_local_name + " | awk '/HWaddr/ {print $NF}'"
+	Log.Infof("mac address cmd: %s", cmdStr0)
+	cmd0 := exec.Command("/bin/sh", "-c", cmdStr0)
+	var out0 bytes.Buffer
+	cmd0.Stdout = &out0
+	err0 := cmd0.Run()
+	if err0 != nil {
+		Log.Error("Error thrown: ", err0)
+	}
+	mac := out0.String()
+	Log.Infof("output of cmd: %s\n", mac)
+
+	//first command {adding port on plumgrid}
+	cmdStr1 := "sudo /opt/pg/bin/ifc_ctl gateway ifdown " + if_local_name + " access_vm vm_" + l.EndpointID[:5] + " " + mac[:17]
+	Log.Infof("second cmd: %s", cmdStr1)
+	cmd1 := exec.Command("/bin/sh", "-c", cmdStr1)
+	var out1 bytes.Buffer
+	cmd1.Stdout = &out1
+	err1 := cmd1.Run()
+	if err1 != nil {
+		Log.Error("Error thrown: ", err1)
+	}
+	Log.Infof("output of cmd: %+v\n", out1.String())
+
+	//second command {up the port on plumgrid}
+	cmdStr2 := "sudo /opt/pg/bin/ifc_ctl gateway del_port " + if_local_name
+	Log.Infof("third cmd: %s", cmdStr2)
+	cmd2 := exec.Command("/bin/sh", "-c", cmdStr2)
+	var out2 bytes.Buffer
+	cmd2.Stdout = &out2
+	err2 := cmd2.Run()
+	if err2 != nil {
+		Log.Error("Error thrown: ", err2)
+	}
+	Log.Infof("output of cmd: %+v\n", out2.String())
 
 	local := vethPair(l.EndpointID[:5])
 	if err := netlink.LinkDel(local); err != nil {
