@@ -30,7 +30,6 @@ type Driver interface {
 type driver struct {
 	client  *docker.Client
 	version string
-	network string
 	//nameserver string
 }
 
@@ -152,13 +151,11 @@ func (driver *driver) createNetwork(w http.ResponseWriter, r *http.Request) {
 	}
 	Log.Infof("Create network request %+v", &create)
 
-	driver.network = create.NetworkID
-
-	driver.plumgridBridge(create.NetworkID)
+	driver.pgBridgeCreate(create.NetworkID)
 
 	emptyResponse(w)
 
-	Log.Infof("Create network %s", driver.network)
+	Log.Infof("Create network %s", create.NetworkID)
 }
 
 // delete network call
@@ -169,11 +166,8 @@ func (driver *driver) deleteNetwork(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	Log.Infof("Delete network request: %+v", &delete)
-	if delete.NetworkID != driver.network {
-		errorResponsef(w, "Network %s not found", delete.NetworkID)
-		return
-	}
-	driver.network = ""
+
+	driver.pgBridgeDestroy(delete.NetworkID)
 
 	emptyResponse(w)
 	Log.Infof("Destroy network %s", delete.NetworkID)
@@ -189,13 +183,7 @@ func (driver *driver) createEndpoint(w http.ResponseWriter, r *http.Request) {
 	Log.Infof("Create endpoint request %+v", &create)
 	Log.Infof("Create endpoint request %+v", create)
 
-	netID := create.NetworkID
 	endID := create.EndpointID
-
-	if netID != driver.network {
-		errorResponsef(w, "No such network %s", netID)
-		return
-	}
 
 	ip := create.Interface.Address
 	Log.Infof("Got IP from IPAM %s", ip)
@@ -250,6 +238,7 @@ func (driver *driver) joinEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 	Log.Infof("Join request: %+v", &j)
 
+	netID := j.NetworkID
 	endID := j.EndpointID
 
 	// create and attach local name to the bridge
@@ -288,7 +277,7 @@ func (driver *driver) joinEndpoint(w http.ResponseWriter, r *http.Request) {
 	Log.Infof("output of cmd: %+v\n", out1.String())
 
 	//second command {up the port on plumgrid}
-	cmdStr2 := "sudo /opt/pg/bin/ifc_ctl gateway ifup " + if_local_name + " access_vm vm_" + endID[:2] + " " + mac[:17] + " pgtag2=bridge-1 pgtag1=pgrid"
+	cmdStr2 := "sudo /opt/pg/bin/ifc_ctl gateway ifup " + if_local_name + " access_vm vm_" + endID[:2] + " " + mac[:17] + " pgtag2=bridge-" + netID[:10] + " pgtag1=pgrid"
 	Log.Infof("third cmd: %s", cmdStr2)
 	cmd2 := exec.Command("/bin/sh", "-c", cmdStr2)
 	var out2 bytes.Buffer
