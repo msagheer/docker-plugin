@@ -1,4 +1,4 @@
-PLUGIN_EXE:=plugin/plugin
+PLUGIN_EXE:=plugin/plumgrid
 
 .DEFAULT: all
 .PHONY: all

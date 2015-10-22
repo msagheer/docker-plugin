@@ -154,6 +154,8 @@ func (driver *driver) createNetwork(w http.ResponseWriter, r *http.Request) {
 
 	driver.network = create.NetworkID
 
+	driver.plumgridBridge(create.NetworkID)
+
 	emptyResponse(w)
 
 	Log.Infof("Create network %s", driver.network)
