@@ -11,6 +11,8 @@ import (
 	Log "github.com/Sirupsen/logrus"
 )
 
+const vif = "192.168.122.100"
+
 func (d *driver) pgBridgeCreate(ID string) {
 	cookieJar, _ := cookiejar.New(nil)
 
@@ -22,7 +24,7 @@ func (d *driver) pgBridgeCreate(ID string) {
 		Transport: tr,
 	}
 
-	url := "https://192.168.122.100/0/login"
+	url := "https://" + vif + "/0/login"
 	Log.Infof("URL:> %s", url)
 
 	var jsonStr = []byte(`{"userName":"plumgrid", "password":"plumgrid"}`)
@@ -44,30 +46,21 @@ func (d *driver) pgBridgeCreate(ID string) {
 
 	//== PUT call
 
-	url2 := "https://192.168.122.100/0/connectivity/domain/admin/ne/bri" + ID
+	url2 := "https://" + vif + "/0/connectivity/domain/admin/ne/bri" + ID
 	fmt.Println("URL:>", url2)
 
 	var jsonStr1 = []byte(`{
-				"DynamicMacAddressTable": {},
-				"HostTable": {},
-				"StaticMacAddressTable": {},
 				"action": {
 					"action1": {
 						"action_text": "create_and_link_ifc(DYN_1)"
 					}
 				},
-				"config_template": "",
 				"ifc": {},
 				"mobility": "true",
 				"ne_description": "PLUMgrid Bridge",
 				"ne_dname": "bridge-` + ID[:10] + `",
 				"ne_group": "Bridge",
-				"ne_type": "bridge",
-				"ne_version": "9.32.3        ",
-				"number_interfaces": 0,
-				"position_x": "201",
-				"position_y": "68",
-				"rate_limiter": {}
+				"ne_type": "bridge"
 	}`)
 
 	req2, err := http.NewRequest("PUT", url2, bytes.NewBuffer(jsonStr1))
@@ -87,7 +80,7 @@ func (d *driver) pgBridgeCreate(ID string) {
 
 	//== PUT call
 
-	url3 := "https://192.168.122.100/0/connectivity/domain/admin/properties/rule_group/cnf" + ID
+	url3 := "https://" + vif + "/0/connectivity/domain/admin/properties/rule_group/cnf" + ID
 	fmt.Println("URL:>", url3)
 
 	var jsonStr3 = []byte(`{
@@ -95,8 +88,6 @@ func (d *driver) pgBridgeCreate(ID string) {
 					"ne_dest": "/ne/bri` + ID + `/action/action1",
 					"ne_dname": "cnf-vmgroup-` + ID[10:] + `",
 					"ne_type": "cnf-vmgroup",
-					"position_x": "375",
-					"position_y": "136",
 					"rule": {
 						"rules` + ID + `": {
 							"add_context": "",
@@ -134,7 +125,7 @@ func (d *driver) pgBridgeDestroy(ID string) {
 		Transport: tr,
 	}
 
-	url := "https://192.168.122.100/0/login"
+	url := "https://" + vif + "/0/login"
 	Log.Infof("URL:> %s", url)
 
 	var jsonStr = []byte(`{"userName":"plumgrid", "password":"plumgrid"}`)
@@ -156,7 +147,7 @@ func (d *driver) pgBridgeDestroy(ID string) {
 
 	//== Delete call
 
-	url2 := "https://192.168.122.100/0/connectivity/domain/admin/ne/bri" + ID
+	url2 := "https://" + vif + "/0/connectivity/domain/admin/ne/bri" + ID
 	fmt.Println("URL:>", url2)
 
 	req2, err := http.NewRequest("DELETE", url2, nil)
@@ -176,7 +167,7 @@ func (d *driver) pgBridgeDestroy(ID string) {
 
 	//== DELETE call
 
-	url3 := "https://192.168.122.100/0/connectivity/domain/admin/properties/rule_group/cnf" + ID
+	url3 := "https://" + vif + "/0/connectivity/domain/admin/properties/rule_group/cnf" + ID
 	fmt.Println("URL:>", url3)
 
 	req3, err := http.NewRequest("DELETE", url3, nil)
