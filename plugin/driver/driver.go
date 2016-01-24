@@ -76,33 +76,6 @@ func (driver *driver) Listen(socket net.Listener) error {
 	return http.Serve(socket, router)
 }
 
-func notFound(w http.ResponseWriter, r *http.Request) {
-	Log.Warningf("[plugin] Not found: %+v", r)
-	http.NotFound(w, r)
-}
-
-func sendError(w http.ResponseWriter, msg string, code int) {
-	Log.Errorf("%d %s", code, msg)
-	http.Error(w, msg, code)
-}
-
-func errorResponsef(w http.ResponseWriter, fmtString string, item ...interface{}) {
-	json.NewEncoder(w).Encode(map[string]string{
-		"Err": fmt.Sprintf(fmtString, item...),
-	})
-}
-
-func objectResponse(w http.ResponseWriter, obj interface{}) {
-	if err := json.NewEncoder(w).Encode(obj); err != nil {
-		sendError(w, "Could not JSON encode response", http.StatusInternalServerError)
-		return
-	}
-}
-
-func emptyResponse(w http.ResponseWriter) {
-	json.NewEncoder(w).Encode(map[string]string{})
-}
-
 // === protocol handlers
 
 type handshakeResp struct {
@@ -277,7 +250,7 @@ func (driver *driver) joinEndpoint(w http.ResponseWriter, r *http.Request) {
 	Log.Infof("output of cmd: %+v\n", out1.String())
 
 	//second command {up the port on plumgrid}
-	cmdStr2 := "sudo /opt/pg/bin/ifc_ctl gateway ifup " + if_local_name + " access_vm vm_" + endID[:2] + " " + mac[:17] + " pgtag2=bridge-" + netID[:10] + " pgtag1=pgrid"
+	cmdStr2 := "sudo /opt/pg/bin/ifc_ctl gateway ifup " + if_local_name + " access_vm vm_" + endID[:2] + " " + mac[:17] + " pgtag2=bridge-" + netID[:10] + " pgtag1=" + pgtag1
 	Log.Infof("third cmd: %s", cmdStr2)
 	cmd2 := exec.Command("/bin/sh", "-c", cmdStr2)
 	var out2 bytes.Buffer
@@ -370,21 +343,4 @@ func (driver *driver) leaveEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 	emptyResponse(w)
 	Log.Infof("Leave %s:%s", l.NetworkID, l.EndpointID)
-}
-
-// ===
-
-func vethPair(suffix string) *netlink.Veth {
-	return &netlink.Veth{
-		LinkAttrs: netlink.LinkAttrs{Name: "tap" + suffix},
-		PeerName:  "ns" + suffix,
-	}
-}
-
-func makeMac(ip net.IP) string {
-	hw := make(net.HardwareAddr, 6)
-	hw[0] = 0x7a
-	hw[1] = 0x42
-	copy(hw[2:], ip.To4())
-	return hw.String()
 }

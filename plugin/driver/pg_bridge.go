@@ -11,8 +11,6 @@ import (
 	Log "github.com/Sirupsen/logrus"
 )
 
-const vif = "192.168.122.100"
-
 func (d *driver) pgBridgeCreate(ID string) {
 	cookieJar, _ := cookiejar.New(nil)
 
@@ -27,7 +25,7 @@ func (d *driver) pgBridgeCreate(ID string) {
 	url := "https://" + vif + "/0/login"
 	Log.Infof("URL:> %s", url)
 
-	var jsonStr = []byte(`{"userName":"plumgrid", "password":"plumgrid"}`)
+	var jsonStr = []byte(`{"userName":"` + username + `", "password":"` + password + `"}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
@@ -46,7 +44,7 @@ func (d *driver) pgBridgeCreate(ID string) {
 
 	//== PUT call
 
-	url2 := "https://" + vif + "/0/connectivity/domain/admin/ne/bri" + ID
+	url2 := "https://" + vif + "/0/connectivity/domain/" + tenant + "/ne/bri" + ID
 	fmt.Println("URL:>", url2)
 
 	var jsonStr1 = []byte(`{
@@ -80,7 +78,7 @@ func (d *driver) pgBridgeCreate(ID string) {
 
 	//== PUT call
 
-	url3 := "https://" + vif + "/0/connectivity/domain/admin/properties/rule_group/cnf" + ID
+	url3 := "https://" + vif + "/0/connectivity/domain/" + tenant + "/rule_group/cnf" + ID
 	fmt.Println("URL:>", url3)
 
 	var jsonStr3 = []byte(`{
@@ -128,7 +126,7 @@ func (d *driver) pgBridgeDestroy(ID string) {
 	url := "https://" + vif + "/0/login"
 	Log.Infof("URL:> %s", url)
 
-	var jsonStr = []byte(`{"userName":"plumgrid", "password":"plumgrid"}`)
+	var jsonStr = []byte(`{"userName":"` + username + `", "password":"` + password + `"}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
@@ -147,7 +145,7 @@ func (d *driver) pgBridgeDestroy(ID string) {
 
 	//== Delete call
 
-	url2 := "https://" + vif + "/0/connectivity/domain/admin/ne/bri" + ID
+	url2 := "https://" + vif + "/0/connectivity/domain/" + tenant + "/ne/bri" + ID
 	fmt.Println("URL:>", url2)
 
 	req2, err := http.NewRequest("DELETE", url2, nil)
@@ -167,7 +165,7 @@ func (d *driver) pgBridgeDestroy(ID string) {
 
 	//== DELETE call
 
-	url3 := "https://" + vif + "/0/connectivity/domain/admin/properties/rule_group/cnf" + ID
+	url3 := "https://" + vif + "/0/connectivity/domain/" + tenant + "/rule_group/cnf" + ID
 	fmt.Println("URL:>", url3)
 
 	req3, err := http.NewRequest("DELETE", url3, nil)
