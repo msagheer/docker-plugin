@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	Log "github.com/Sirupsen/logrus"
-	"github.com/libnetwork-plugin/plugin/driver"
+	driver "github.com/msagheer/libnetwork-plugin/plugin/driver"
 )
 
 var version = "v1.0"

@@ -124,7 +124,7 @@ func (driver *driver) createNetwork(w http.ResponseWriter, r *http.Request) {
 	}
 	Log.Infof("Create network request %+v", &create)
 
-	driver.pgBridgeCreate(create.NetworkID)
+	pgBridgeCreate(create.NetworkID)
 
 	emptyResponse(w)
 
@@ -140,7 +140,7 @@ func (driver *driver) deleteNetwork(w http.ResponseWriter, r *http.Request) {
 	}
 	Log.Infof("Delete network request: %+v", &delete)
 
-	driver.pgBridgeDestroy(delete.NetworkID)
+	pgBridgeDestroy(delete.NetworkID)
 
 	emptyResponse(w)
 	Log.Infof("Destroy network %s", delete.NetworkID)

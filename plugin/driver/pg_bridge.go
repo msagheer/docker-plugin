@@ -11,7 +11,7 @@ import (
 	Log "github.com/Sirupsen/logrus"
 )
 
-func (d *driver) pgBridgeCreate(ID string) {
+func pgBridgeCreate(ID string) {
 	cookieJar, _ := cookiejar.New(nil)
 
 	tr := &http.Transport{
@@ -112,7 +112,7 @@ func (d *driver) pgBridgeCreate(ID string) {
 
 }
 
-func (d *driver) pgBridgeDestroy(ID string) {
+func pgBridgeDestroy(ID string) {
 	cookieJar, _ := cookiejar.New(nil)
 
 	tr := &http.Transport{
